@@ -2,9 +2,10 @@ from random import randint
 from collections import deque
 import copy
 
-board = {3: {1: 'X', 2: ' ', 3: 'O'},
-         2: {1: ' ', 2: 'X', 3: ' '},
-         1: {1: 'X', 2: 'O', 3: 'O'},
+
+board = {3: {1: ' ', 2: ' ', 3: ' '},
+         2: {1: ' ', 2: ' ', 3: ' '},
+         1: {1: ' ', 2: ' ', 3: ' '},
          'T': {'T': 'X', 'nx': 0, 'no': 0,
                'available': ['3 1', '3 2', '3 3', '2 1', '2 2', '2 3', '1 1', '1 2', '1 3'],
                'removed': []}
@@ -30,18 +31,6 @@ def startup():
                 else:
                     board[key][slot] = seq[i]
                 i += 1
-
-    # for y in seq:
-    #     if y == 'X':
-    #         board['T']['nx'] += 1
-    #     elif y == 'O':
-    #         board['T']['no'] += 1
-    #
-    # if board['T']['nx'] == board['T']['no']:
-    #     board['T']['T'] = 'X'
-    # elif board['T']['nx'] > board['T']['no']:
-    #     board['T']['T'] = 'O'
-
     print_board()
 
 
@@ -77,8 +66,6 @@ def enter(symbol):
         board['T']['removed'].append(str(x) + ' ' + str(y))
         board[x][y] = symbol
 
-        # print_board()
-
 
 def check_win(*input_board):
     check_diagonal = []
@@ -93,7 +80,6 @@ def check_win(*input_board):
         if key != 'T':
             check_list = list(check_board[key].values())
             if all_same_list(check_list):
-                # print(1)
                 return check_list[0] + " wins"
 
             if ' ' in check_list:
@@ -104,26 +90,19 @@ def check_win(*input_board):
                 if element != 'T':
                     check_list.append(check_board[element][key])
             if all_same_list(check_list):
-                # print(2)
                 return check_list[0] + " wins"
 
             check_diagonal.append(check_board[key][key])
             diagonal_reverse.append(check_board[key][4 - key])
 
     if all_same_list(check_diagonal):
-        # print(3)
-        # if not input_board:
-        #     print(check_diagonal)
         return check_diagonal[0] + " wins"
 
     if all_same_list(diagonal_reverse):
-        # print(4)
         return diagonal_reverse[0] + " wins"
 
     if draw:
         return "Draw"
-    # elif not draw and (board['T']['nx'] >= 3 or board['T']['no'] >= 3):
-    #     return "Game not finished"
     else:
         return False
 
@@ -133,7 +112,6 @@ def all_same_list(lis):
 
 
 def two_same_list(lis):
-    # print(lis)
     if ' ' in lis:
         ind = lis.index(' ')
         lis.pop(ind)
@@ -148,7 +126,6 @@ def random_move(mode, symbol):
     choice = board["T"]['available'].pop(choice_ind)
     board["T"]['removed'].append(choice)
     choice = choice.split(' ')
-    # print(choice)
     board[int(choice[0])][int(choice[1])] = symbol
     print('Making move level "{}"'.format(mode))
     print_board()
@@ -166,7 +143,6 @@ def essential_move(mode, symbol):
             check = two_same_list(check_list)
             if check and check_list[check - 1] == symbol:
                 buffer.appendleft(str(key) + ' ' + str(check + 1))
-                # board[key][check + 1] = symbol
                 win = True
                 break
             elif check and check_list[check - 1] != ' ':
@@ -182,7 +158,6 @@ def essential_move(mode, symbol):
 
             if check and check_list[check - 1] == symbol:
                 buffer.appendleft(str(3 - check) + ' ' + str(key))
-                # board[3 - check][key] = symbol
                 win = True
                 break
             elif check and check_list[check - 1] != ' ':
@@ -244,20 +219,15 @@ def array_to_board(arr):
                    2: {1: ' ', 2: ' ', 3: ' '},
                    1: {1: ' ', 2: ' ', 3: ' '},
                    }
-
     ind = 0
 
     for key in check_board:
-        # if key == 'T':
-        #     continue
         for sub_key in check_board[key]:
             if isinstance(arr[ind], str):
-                # print(124521)
                 check_board[key][sub_key] = arr[ind]
             else:
                 check_board[key][sub_key] = ' '
             ind += 1
-
     return check_board
 
 
@@ -267,7 +237,6 @@ def hard_move(symbol, *args):
 
     if len(args) == 2:
         working_board = copy.deepcopy(args[0])
-        # working_board = args[0]
         move_count = args[1] + 1
 
     res = check_win(working_board)
@@ -283,18 +252,14 @@ def hard_move(symbol, *args):
 
     for x in options.keys():
         temporary_board = copy.deepcopy(working_board)
-        # print('temporary board before', temporary_board)
+
         if move_count % 2 == 1:
             temporary_board[x] = symbol
         elif move_count % 2 == 0:
             temporary_board[x] = opposite_move(symbol)
-        # print("move count is", move_count, 'current move is', x, 'temporary board after', temporary_board)
-        # testing_board = temporary_board
-        deeper_move = hard_move(symbol, temporary_board, move_count)
-        # print('deeper move is', deeper_move, 'x is', x)
-        options[x] += deeper_move[0]
 
-    # print(options, 32)
+        options[x] += hard_move(symbol, temporary_board, move_count)[0]
+
     for index, value in options.items():
         if move_count % 2 == 1 and value == max(options.values()):
             return value, index
@@ -326,14 +291,12 @@ def move_handler(mode, symbol):
     elif mode == 'easy':
         random_move(mode, symbol)
     elif mode == 'hard':
-        # print(hard_move(symbol), 69)
         pos = hard_move(symbol)[1]
         make_hard_move(pos, symbol)
-    # print('one turn')
+
     print_board()
     if check_win():
         print(check_win(), 'check win ')
-        # print(board)
         reset()
         return True
 
@@ -377,5 +340,4 @@ def start():
                 break
 
 
-# print(array_to_board([0, 1, 2, 3, 4, 5, 6, 7, 8]))
 start()
