@@ -2,9 +2,9 @@ from random import randint
 from collections import deque
 
 
-board = {3: {1: ' ', 2: ' ', 3: ' '},
-         2: {1: ' ', 2: ' ', 3: ' '},
-         1: {1: ' ', 2: ' ', 3: ' '},
+board = {3: {1: 'X', 2: ' ', 3: 'O'},
+         2: {1: ' ', 2: 'X', 3: ' '},
+         1: {1: 'X', 2: 'O', 3: 'O'},
          'T': {'T': 'X', 'nx': 0, 'no': 0,
                'available': ['3 1', '3 2', '3 3', '2 1', '2 2', '2 3', '1 1', '1 2', '1 3'],
                'removed': []}
@@ -262,52 +262,47 @@ def array_to_board(arr):
 
 
 def hard_move(symbol, *args):
-    working_board = []
-    options = {}
+    move_count = 1
+    working_board = board_to_array(board)
+    # working_board = []
+    # options = {}
 
-    if len(args) == 0:
-        working_board = board_to_array(board)
-        move_count = 1
-    elif len(args) == 2:
+    # if len(args) == 0:
+    #     pass
+    if len(args) == 2:
         working_board = args[0]
         move_count = args[1] + 1
-        print(move_count, args)
 
-    if check_win(working_board):
-        res = check_win(working_board)
-        # print(working_board)
-
+    res = check_win(working_board)
+    if res:
         if res[0] == 'D':
             return [0]
         elif res[0] == symbol:
             return [1]
-        else:
+        elif res[0] == opposite_move(symbol):
             return [-1]
-    else:
+    # else:
 
-        for x in working_board:
-            # print(x)
-            if isinstance(x, int):
-                options.update({x: 0})
-                temporary_board = working_board
-                # print(move_count, x, working_board)
+    # print(options, 'test32')
+    options = dict([(x, 0) for x in working_board if isinstance(x, int)])
+    for x in options.keys():
+        # print(x)
+        temporary_board = working_board
 
-                if move_count % 2 == 1:
-                    temporary_board[x] = symbol
-                elif move_count % 2 == 0:
-                    temporary_board[x] = opposite_move(symbol)
+        print("move count is", move_count)
+        if move_count % 2 == 1:
+            temporary_board[x] = symbol
+        elif move_count % 2 == 0:
+            temporary_board[x] = opposite_move(symbol)
 
-                options[x] += hard_move(symbol, temporary_board, move_count)[0]
-                # elem[x] += hard_move(symbol, temporary_board, move_count)
-                # options.update(elem)
+        options[x] += hard_move(symbol, temporary_board, move_count)[0]
 
-        print(options, 32)
-        for index, value in options.items():
-            print(options.values(), 44)
-            if move_count % 2 == 1 and value == max(options.values()):
-                return value, index
-            elif move_count % 2 == 0 and value == min(options.values()):
-                return value, index
+    print(options, 32)
+    for index, value in options.items():
+        if move_count % 2 == 1 and value == max(options.values()):
+            return value, index
+        elif move_count % 2 == 0 and value == min(options.values()):
+            return value, index
 
 
 def make_hard_move(position, symbol):
