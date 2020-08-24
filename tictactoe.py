@@ -1,6 +1,6 @@
 from random import randint
 from collections import deque
-
+import copy
 
 board = {3: {1: 'X', 2: ' ', 3: 'O'},
          2: {1: ' ', 2: 'X', 3: ' '},
@@ -77,7 +77,7 @@ def enter(symbol):
         board['T']['removed'].append(str(x) + ' ' + str(y))
         board[x][y] = symbol
 
-        print_board()
+        # print_board()
 
 
 def check_win(*input_board):
@@ -264,13 +264,10 @@ def array_to_board(arr):
 def hard_move(symbol, *args):
     move_count = 1
     working_board = board_to_array(board)
-    # working_board = []
-    # options = {}
 
-    # if len(args) == 0:
-    #     pass
     if len(args) == 2:
-        working_board = args[0]
+        working_board = copy.deepcopy(args[0])
+        # working_board = args[0]
         move_count = args[1] + 1
 
     res = check_win(working_board)
@@ -281,23 +278,23 @@ def hard_move(symbol, *args):
             return [1]
         elif res[0] == opposite_move(symbol):
             return [-1]
-    # else:
 
-    # print(options, 'test32')
     options = dict([(x, 0) for x in working_board if isinstance(x, int)])
-    for x in options.keys():
-        # print(x)
-        temporary_board = working_board
 
-        print("move count is", move_count)
+    for x in options.keys():
+        temporary_board = copy.deepcopy(working_board)
+        # print('temporary board before', temporary_board)
         if move_count % 2 == 1:
             temporary_board[x] = symbol
         elif move_count % 2 == 0:
             temporary_board[x] = opposite_move(symbol)
+        # print("move count is", move_count, 'current move is', x, 'temporary board after', temporary_board)
+        # testing_board = temporary_board
+        deeper_move = hard_move(symbol, temporary_board, move_count)
+        # print('deeper move is', deeper_move, 'x is', x)
+        options[x] += deeper_move[0]
 
-        options[x] += hard_move(symbol, temporary_board, move_count)[0]
-
-    print(options, 32)
+    # print(options, 32)
     for index, value in options.items():
         if move_count % 2 == 1 and value == max(options.values()):
             return value, index
@@ -332,7 +329,7 @@ def move_handler(mode, symbol):
         # print(hard_move(symbol), 69)
         pos = hard_move(symbol)[1]
         make_hard_move(pos, symbol)
-    print('one turn')
+    # print('one turn')
     print_board()
     if check_win():
         print(check_win(), 'check win ')
